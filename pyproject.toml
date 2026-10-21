@@ -1,0 +1,14 @@
+[project]
+name = "interview-takehome-main"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dotenv>=0.9.9",
+    "fastapi>=0.158.1",
+    "psycopg>=3.3.6",
+    "pydantic>=2.14.1",
+    "sqlalchemy>=2.1.6",
+    "uvicorn>=0.54.0",
+]
