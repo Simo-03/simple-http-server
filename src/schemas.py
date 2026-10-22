@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
 
-
 class AuthRequest(BaseModel):
     username: str
     password: str
@@ -18,12 +17,29 @@ class AuthContext(BaseModel):
     residential_params: ResidentialParams | None = None
 
 
-#TODO: write the route_sevice class and proxy_addr
-#TODO: update the context class to accomodate routing
+class ErrorResponse(BaseModel):
+    internal_error_code: int
+    error_message: str
+
+
+class ProxyAddress(BaseModel):
+    ip: str
+    port: int
+
+
+class RouteContext(BaseModel):
+    proxy_addr: ProxyAddress
+    protocol: str
+
 
 class Context(BaseModel):
     auth_service: AuthContext
-    # route_service: RouteContext | None = None
+    route_service: RouteContext | None = None
+
+
+class RouteRequest(BaseModel):
+    context: Context
+    protocol: str
 
 
 class AuthResponse(BaseModel):
@@ -31,6 +47,6 @@ class AuthResponse(BaseModel):
     available_bandwidth: int
 
 
-class ErrorResponse(BaseModel):
-    internal_error_code: int
-    error_message: str
+class RouteResponse(BaseModel):
+    context: Context
+    proxy_addr: ProxyAddress
