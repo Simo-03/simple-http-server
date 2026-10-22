@@ -135,11 +135,25 @@ a running server. Ruff checks the Python source and tests for lint issues.
 - **Code structure:** HTTP handlers, business services, and database repositories
   have separate responsibilities.
 - **Database sessions:** SQLAlchemy provides a shared connection pool and a
-  session per request.
-- **Proxy selection:** Selection uses `ORDER BY random() LIMIT 1`. At scale, query
-  indexes and an eligible-proxy pool or cache would reduce selection work.
-- **Additional routing rules:** State targeting could extend the service's
-  fallback policy. Per-user rate limiting could be added as a separate stage.
+  session per request. Pool limits, worker counts, and timeouts need tuning
+  together for the intended deployment and database capacity.
+- **Proxy selection:** `ORDER BY random() LIMIT 1` evaluates random values for
+  every eligible row, which becomes expensive as the proxy pool grows. A maintained
+  pool of eligible proxy IDs or a cache could reduce selection work.
+- **Query indexes:** The supplied schema has no dedicated indexes for protocol,
+  country, or city filtering. Indexes should be chosen using measured query plans.
+- **Database round trips:** Each routing request performs one lookup, or two when
+  city targeting falls back to country. Routing depends on database availability.
+- **Performance:** Functional checks do not establish production throughput or
+  latency under concurrency. Load testing is needed before making capacity claims.
+- **Optional region fallback:** A future `allow_region_fallback` flag could permit
+  selection within a configured geographic region when the requested country has
+  no compatible proxy. It would default to `false`, preserving the current 3400
+  error on a country miss. Enabling it would require a country-to-region mapping,
+  allow selection in another country, and retain the requested protocol.
+- **Additional routing rules:** State targeting (e.g. Montana within the US) could
+  extend the service's fallback policy. Per-user rate limiting could be added as
+  a separate stage.
 - **Passwords:** Password hashing would replace plaintext comparison in a
   production implementation.
 - **Logging:** SQL logging is enabled for development. Structured request logs
