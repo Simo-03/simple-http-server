@@ -29,3 +29,8 @@ class Context(BaseModel):
 class AuthResponse(BaseModel):
     context: Context
     available_bandwidth: int
+
+
+class ErrorResponse(BaseModel):
+    internal_error_code: int
+    error_message: str
