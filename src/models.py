@@ -6,7 +6,7 @@ from decimal import Decimal
 
 
 
-class Auth(Base):
+class User(Base):
     __tablename__ = "residential_proxy_user"
 
     id: Mapped[int] = mapped_column(primary_key=True)

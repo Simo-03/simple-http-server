@@ -6,12 +6,12 @@ import re
 
 
 class AuthService():
-    def __init__(self, db_user: UserRepository):
-        self.db_user = db_user
+    def __init__(self, user_db: UserRepository) -> None:
+        self.user_db = user_db
 
-    def authenticate(self, username, password) -> AuthContext:
+    def authenticate(self, username: str, password: str) -> AuthContext:
         user_id, country, city = parse_username(username)
-        user = self.db_user.get_by_proxy_user_id(user_id)
+        user = self.user_db.get_user(user_id)
 
         if user is None:
             raise ValueError("user not found")
