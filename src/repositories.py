@@ -1,8 +1,10 @@
-from sqlalchemy import select, func
-from src.models import User, Proxy
-from typing import Optional
 
-class UserRepository():
+from sqlalchemy import func, select
+
+from src.models import Proxy, User
+
+
+class UserRepository:
     def __init__(self, session):
         self.session = session
 
@@ -13,15 +15,13 @@ class UserRepository():
         return result.scalar_one_or_none()
 
 
-class ProxyRepository():
+class ProxyRepository:
     def __init__(self, session):
         self.session = session
 
     def get_proxy(
-        self,
-        protocol: str,
-        country: Optional[str] = None,
-        city: Optional[str] = None) -> Proxy | None:
+        self, protocol: str, country: str | None = None, city: str | None = None
+    ) -> Proxy | None:
 
         stmt = select(Proxy).where(
             Proxy.residential_proxy_supported_protocol == protocol

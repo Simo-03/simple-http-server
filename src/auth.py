@@ -1,14 +1,15 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from src.schemas import AuthRequest, AuthResponse, Context, ErrorResponse
-from src.repositories import UserRepository
-from src.services import AuthService
 from src.database import get_db
+from src.repositories import UserRepository
+from src.schemas import AuthRequest, AuthResponse, Context, ErrorResponse
+from src.services import AuthService
 
-
-# error message -> error codes (HTPP status code, internal error code)
+# Error message -> (HTTP status code, internal error code)
 ERROR_CODES = {
     "invalid username format": (400, 1000),
     "invalid password": (401, 1001),
@@ -16,10 +17,7 @@ ERROR_CODES = {
     "user not found": (401, 1003),
 }
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["auth"]
-)
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post(
@@ -27,7 +25,9 @@ router = APIRouter(
     response_model=AuthResponse,
     response_model_exclude_none=True,
 )
-def authenticate(request: AuthRequest, db: Session = Depends(get_db)) -> AuthResponse | JSONResponse:
+def authenticate(
+    request: AuthRequest, db: Annotated[Session, Depends(get_db)]
+) -> AuthResponse | JSONResponse:
     user_db = UserRepository(session=db)
     service = AuthService(user_db=user_db)
     try:
@@ -36,20 +36,17 @@ def authenticate(request: AuthRequest, db: Session = Depends(get_db)) -> AuthRes
         error_msg = str(e)
         error_codes = ERROR_CODES.get(error_msg)
         if not error_codes:
-            raise 
+            raise
         error_response = ErrorResponse(
-            internal_error_code=error_codes[1],
-            error_message=error_msg
+            internal_error_code=error_codes[1], error_message=error_msg
         )
-        
+
         return JSONResponse(
             status_code=error_codes[0],
             content=error_response.model_dump(),
         )
-        
-    context = Context(
-        auth_service=auth_context
-    )
+
+    context = Context(auth_service=auth_context)
     auth_response = AuthResponse(
         context=context,
         available_bandwidth=auth_context.available_bandwidth,

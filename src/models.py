@@ -1,11 +1,11 @@
-from sqlalchemy import Numeric, String, CheckConstraint
-from sqlalchemy.orm import Mapped, mapped_column
-from src.database import Base
 from decimal import Decimal
 from ipaddress import IPv4Address
+
+from sqlalchemy import CheckConstraint, Numeric, String
 from sqlalchemy.dialects.postgresql import INET
+from sqlalchemy.orm import Mapped, mapped_column
 
-
+from src.database import Base
 
 
 class User(Base):
@@ -22,8 +22,7 @@ class User(Base):
         nullable=False,
     )
     proxy_user_available_bandwidth: Mapped[Decimal] = mapped_column(
-        Numeric,
-        nullable=False
+        Numeric, nullable=False
     )
 
 
@@ -46,8 +45,6 @@ class Proxy(Base):
     )
     residential_proxy_supported_protocol: Mapped[str] = mapped_column(
         String(10),
-        CheckConstraint(
-        "residential_proxy_supported_protocol IN ('http', 'socks5')"
-        ),
+        CheckConstraint("residential_proxy_supported_protocol IN ('http', 'socks5')"),
         nullable=False,
     )

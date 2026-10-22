@@ -1,15 +1,14 @@
-from src.repositories import UserRepository, ProxyRepository
-from src.schemas import AuthContext, ResidentialParams, ProxyAddress, RouteContext
-from typing import Optional
-
 import re
+
 import pycountry
 
+from src.repositories import ProxyRepository, UserRepository
+from src.schemas import AuthContext, ProxyAddress, ResidentialParams, RouteContext
 
 SUPPORTED_PROTOCOLS = ["http", "socks5"]
 
 
-class AuthService():
+class AuthService:
     def __init__(self, user_db: UserRepository) -> None:
         self.user_db = user_db
 
@@ -38,26 +37,24 @@ class AuthService():
             )
         else:
             auth_context = AuthContext(
-                            proxy_user_id=user_id,
-                            available_bandwidth=user_bandwidth,
-                            residential_params=None,
-                        )
+                proxy_user_id=user_id,
+                available_bandwidth=user_bandwidth,
+                residential_params=None,
+            )
 
         return auth_context
 
 
-class RouteService():
+class RouteService:
     def __init__(self, proxy_db: ProxyRepository) -> None:
         self.proxy_db = proxy_db
 
     def route(
-        self,
-        protocol: str,
-        country: Optional[str] = None,
-        city: Optional[str] = None) -> RouteContext:
+        self, protocol: str, country: str | None = None, city: str | None = None
+    ) -> RouteContext:
 
         if protocol not in SUPPORTED_PROTOCOLS:
-                raise ValueError("unsupported protocol")
+            raise ValueError("unsupported protocol")
 
         proxy = self.proxy_db.get_proxy(protocol, country, city)
 
@@ -81,13 +78,12 @@ class RouteService():
         return route_context
 
 
-
-
 def validate_user_id(user_id: str) -> None:
     # Letters, digits, and underscores; at least one character
     user_id_pattern = r"[A-Za-z0-9_]+"
     if re.fullmatch(user_id_pattern, user_id) is None:
         raise ValueError("invalid username format")
+
 
 def validate_country(country: str) -> None:
     # Exactly two lowercase ASCII letters
@@ -97,11 +93,13 @@ def validate_country(country: str) -> None:
     if re.fullmatch(country_pattern, country) is None or country_details is None:
         raise ValueError("invalid username format")
 
+
 def validate_city(city: str) -> None:
     # Lowercase words separated by single underscores
     city_pattern = r"[a-z]+(?:_[a-z]+)*"
     if re.fullmatch(city_pattern, city) is None:
-            raise ValueError("invalid username format")
+        raise ValueError("invalid username format")
+
 
 def parse_username(username: str) -> tuple[str, str | None, str | None]:
     if not username:

@@ -1,21 +1,20 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from src.schemas import RouteResponse, RouteRequest, ErrorResponse, Context
+
 from src.database import get_db
 from src.repositories import ProxyRepository
+from src.schemas import Context, ErrorResponse, RouteRequest, RouteResponse
 from src.services import RouteService
-
 
 ERROR_CODES = {
     "unsupported protocol": (400, 3001),
     "no proxy found for country": (404, 3400),
 }
 
-router = APIRouter(
-    prefix="/route",
-    tags=["route"]
-)
+router = APIRouter(prefix="/route", tags=["route"])
 
 
 @router.post(
@@ -23,7 +22,9 @@ router = APIRouter(
     response_model=RouteResponse,
     response_model_exclude_none=True,
 )
-def route(request: RouteRequest, db: Session = Depends(get_db)) -> RouteResponse | JSONResponse:
+def route(
+    request: RouteRequest, db: Annotated[Session, Depends(get_db)]
+) -> RouteResponse | JSONResponse:
     proxy_db = ProxyRepository(session=db)
     service = RouteService(proxy_db=proxy_db)
 
@@ -39,8 +40,7 @@ def route(request: RouteRequest, db: Session = Depends(get_db)) -> RouteResponse
         if not error_codes:
             raise
         error_response = ErrorResponse(
-            internal_error_code=error_codes[1],
-            error_message=error_msg
+            internal_error_code=error_codes[1], error_message=error_msg
         )
 
         return JSONResponse(
