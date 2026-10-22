@@ -27,7 +27,8 @@ def route(
 ) -> RouteResponse | JSONResponse:
     proxy_db = ProxyRepository(session=db)
     service = RouteService(proxy_db=proxy_db)
-
+    # This stage trusts the auth context supplied by an internal caller.
+    # It selects a proxy without authenticating again or consuming bandwidth.
     params = request.context.auth_service.residential_params
     country = params.country if params is not None else None
     city = params.city if params is not None else None
@@ -38,6 +39,7 @@ def route(
         error_msg = str(e)
         error_codes = ERROR_CODES.get(error_msg)
         if not error_codes:
+            # Let unexpected errors reach the global handler with their original traceback.
             raise
         error_response = ErrorResponse(
             internal_error_code=error_codes[1], error_message=error_msg

@@ -19,6 +19,8 @@ class AuthService:
         if user is None:
             raise ValueError("user not found")
 
+        # Plaintext comparison matches the supplied seed data.
+        # TODO: Store password hashes and verify them using a password-hashing library.
         if password != user.proxy_user_password:
             raise ValueError("invalid password")
 
@@ -58,13 +60,15 @@ class RouteService:
 
         proxy = self.proxy_db.get_proxy(protocol, country, city)
 
-        # country fallback
+        # If the city has no compatible proxy, retry within the same country.
+        # Preserve the requested protocol and never fall back to another country.
         if proxy is None and country is not None and city is not None:
             proxy = self.proxy_db.get_proxy(protocol, country, None)
 
         if proxy is None:
             raise ValueError("no proxy found for country")
 
+        # Convert psycopg's native IP address object to the API's string representation.
         proxy_address = ProxyAddress(
             ip=str(proxy.residential_proxy_ip_address_v4),
             port=proxy.residential_proxy_port,
@@ -88,7 +92,8 @@ def validate_user_id(user_id: str) -> None:
 def validate_country(country: str) -> None:
     # Exactly two lowercase ASCII letters
     country_pattern = r"[a-z]{2}"
-    # Validates ISO country-code membership
+    # Use an uppercase copy for the ISO lookup; the regex still enforces
+    # lowercase input, and the original value is preserved for routing.
     country_details = pycountry.countries.get(alpha_2=country.upper())
     if re.fullmatch(country_pattern, country) is None or country_details is None:
         raise ValueError("invalid username format")
@@ -105,6 +110,8 @@ def parse_username(username: str) -> tuple[str, str | None, str | None]:
     if not username:
         raise ValueError("invalid username format")
 
+    # Split on reserved targeting markers because user IDs and city names
+    # can contain underscores. Treat "_c_" and "_city_" as reserved delimiters.
     if "_city_" in username:
         if "_c_" not in username:
             raise ValueError("invalid username format")

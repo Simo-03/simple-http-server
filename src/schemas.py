@@ -34,6 +34,7 @@ class RouteContext(BaseModel):
 
 class Context(BaseModel):
     auth_service: AuthContext
+    # Auth creates the context first; routing populates this field afterward.
     route_service: RouteContext | None = None
 
 

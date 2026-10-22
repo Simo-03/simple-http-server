@@ -29,5 +29,7 @@ class Base(DeclarativeBase):
 
 
 def get_db():
+    # Close the session and return any borrowed connection to the pool,
+    # including when request handling raises an exception.
     with SessionLocal() as session:
         yield session

@@ -36,6 +36,7 @@ def authenticate(
         error_msg = str(e)
         error_codes = ERROR_CODES.get(error_msg)
         if not error_codes:
+            # Let unexpected errors reach the global handler with their original traceback.
             raise
         error_response = ErrorResponse(
             internal_error_code=error_codes[1], error_message=error_msg

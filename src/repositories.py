@@ -1,4 +1,3 @@
-
 from sqlalchemy import func, select
 
 from src.models import Proxy, User
@@ -30,6 +29,9 @@ class ProxyRepository:
             stmt = stmt.where(Proxy.country_id == country)
         if city is not None:
             stmt = stmt.where(Proxy.city_id == city)
+        # Random ordering is simple for this dataset but evaluates every eligible row.
+        # TODO: For larger datasets, use a maintained pool of eligible proxy IDs
+        # to avoid random ordering on every request.
         stmt = stmt.order_by(func.random()).limit(1)
         result = self.session.execute(stmt)
 
