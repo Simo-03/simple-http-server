@@ -3,6 +3,7 @@ from src.schemas import AuthContext, ResidentialParams, ProxyAddress, RouteConte
 from typing import Optional
 
 import re
+import pycountry
 
 
 SUPPORTED_PROTOCOLS = ["http", "socks5"]
@@ -91,7 +92,9 @@ def validate_user_id(user_id: str) -> None:
 def validate_country(country: str) -> None:
     # Exactly two lowercase ASCII letters
     country_pattern = r"[a-z]{2}"
-    if re.fullmatch(country_pattern, country) is None:
+    # Validates ISO country-code membership
+    country_details = pycountry.countries.get(alpha_2=country.upper())
+    if re.fullmatch(country_pattern, country) is None or country_details is None:
         raise ValueError("invalid username format")
 
 def validate_city(city: str) -> None:
